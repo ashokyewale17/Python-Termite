@@ -19,7 +19,7 @@ class ModernSerialTermite:
         self.build_ui()
 
     def build_ui(self):
-        # Top Frame 
+        #Top Frame
         top_frame = ttk.Frame(self.root, padding=15)
         top_frame.pack(fill="x")
 
@@ -37,13 +37,13 @@ class ModernSerialTermite:
         self.clear_btn = Button(top_frame, text="Clear", bootstyle="warning", command=self.clear_output)
         self.clear_btn.pack(side="left")
 
-        # Terminal Output 
+        # Terminal Output
         self.output = scrolledtext.ScrolledText(self.root, height=20, bg="#121212", fg="#00ff88",
                                                 insertbackground="white", font=("Consolas", 10), wrap="word",
                                                 borderwidth=1, relief="flat")
         self.output.pack(padx=15, pady=(5, 10), fill="both", expand=True)
 
-        # Bottom Frame 
+        # Bottom Frame
         bottom_frame = ttk.Frame(self.root, padding=15)
         bottom_frame.pack(fill="x")
 
