@@ -164,14 +164,40 @@ class SerialTermite:
             self.write_red_output("Not connected.\n")
             
     def read_from_port(self):
-        while self.alive and self.serial_port and self.serial_port.is_open:
-            try:
-                data = self.serial_port.read(self.serial_port.in_waiting or 1)
-                if data:
-                    self.process_received_data(data)
-            except Exception as e:
-                self.write_to_output(f"\nRead error: {e}\n")
-                break
+    flag = 0  # Initialize the flag
+    while self.alive and self.serial_port and self.serial_port.is_open:
+        try:
+            data = self.serial_port.read(self.serial_port.in_waiting or 1)
+            if data:
+                # Accumulate incoming binary bytes
+                self.response_bytes += data
+
+                # Check if the expected response length is reached
+                if len(self.response_bytes) >= self.expected_length:
+                    # Validate the first and last bytes
+                    first_byte = self.response_bytes[0]
+                    last_byte = self.response_bytes[-1]
+
+                    if self.current_command.startswith("ff") and len(self.response_bytes) == 20:
+                        if first_byte == 0xff and last_byte == 0x00:
+                            flag = 1  # Valid bytes received
+                        else:
+                            flag = 0  # Invalid bytes
+                    elif (self.current_command.startswith("20") or self.current_command.startswith("30")) and len(self.response_bytes) == 10:
+                        if first_byte == 0x20 and last_byte == 0x2f:
+                            flag = 1  # Valid bytes received
+                        else:
+                            flag = 0  # Invalid bytes
+
+                    # Process valid data
+                    if flag == 1:
+                        self.process_received_data(self.response_bytes)
+                        flag = 0  # Reset flag after processing
+                        self.response_bytes = b""  # Clear the buffer
+
+        except Exception as e:
+            self.write_to_output(f"\nRead error: {e}\n")
+            break
 
     def process_received_data(self, data):
         if data and self.pending_response:
